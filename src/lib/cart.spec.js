@@ -64,49 +64,49 @@ describe('Cart', () => {
 
   describe('#summary', () => {
     it('should return an object with the total and the list of items', () => {
-      cart.add({
-        product,
-        quantity: 2,
-      })
+      cart.add({ product, quantity: 2 })
 
-      cart.add({
-        product: product2,
-        quantity: 3,
-      })
+      cart.add({ product: product2, quantity: 3 })
 
       expect(cart.summary()).toMatchInlineSnapshot(`
-        Object {
-          "items": Array [
-            Object {
-              "product": Object {
-                "price": 35388,
-                "title": "Adidas running shoes - men",
-              },
-              "quantity": 2,
-            },
-            Object {
-              "product": Object {
-                "price": 41872,
-                "title": "Adidas running shoes - woman",
-              },
-              "quantity": 3,
-            },
-          ],
-          "total": 196392,
-        }
-      `);
+Object {
+  "formatted": "R$1,963.92",
+  "items": Array [
+    Object {
+      "product": Object {
+        "price": 35388,
+        "title": "Adidas running shoes - men",
+      },
+      "quantity": 2,
+    },
+    Object {
+      "product": Object {
+        "price": 41872,
+        "title": "Adidas running shoes - woman",
+      },
+      "quantity": 3,
+    },
+  ],
+  "total": 196392,
+}
+`);
     })
 
     it('should not reset cart', () => {
-      cart.add({
-        product,
-        quantity: 2,
-      })
+      cart.add({ product, quantity: 2 })
 
-      cart.add({
-        product: product2,
-        quantity: 3,
-      })
+      cart.add({ product: product2, quantity: 3 })
+
+      cart.summary()
+
+      expect(cart.summary()).toMatchSnapshot();
+      expect(cart.getTotal().getAmount()).toBeGreaterThan(0);
+    })
+
+    it('should included formatted amount in the summary', () => {
+      cart.add({ product, quantity: 2 })
+
+      cart.add({ product: product2, quantity: 3 })
 
       cart.summary()
 
@@ -222,6 +222,24 @@ describe('Cart', () => {
       cart.add({ product, condition, quantity: 5 });
 
       expect(cart.getTotal().getAmount()).toEqual(106164);
+    })
+
+    it('should receive two or more conditions and determine/apply the best discount. First case.', () => {
+      const condition1 = { percentage: 30, minimum: 2 };
+      const condition2 = { quantity: 2 };
+
+      cart.add({ product, condition: [condition1, condition2], quantity: 5 });
+
+      expect(cart.getTotal().getAmount()).toEqual(106164);
+    })
+
+    it('should receive two or more conditions and determine/apply the best discount. Second case.', () => {
+      const condition1 = { percentage: 80, minimum: 2 };
+      const condition2 = { quantity: 2 };
+
+      cart.add({ product, condition: [condition1, condition2], quantity: 5 });
+
+      expect(cart.getTotal().getAmount()).toEqual(35388);
     })
   })
 })
